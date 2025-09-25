@@ -1,16 +1,12 @@
 const express = require("express");
 const app = express();
-const { errorMiddleware } = require("./middlewares/error-middleware");
+
+const { loggingMiddleware, errorMiddleware } = require("./middlewares");
+
 const port = 3040;
 
 //middleware
-app.use((req, res, next) => {
-  console.log("This is my Default middleware");
-  console.log(
-    `Request URL: ${req.url}, Request Type: ${req.method}, Time: ${new Date()}`
-  );
-  next();
-});
+app.use(loggingMiddleware);
 
 app.get(
   "/",
