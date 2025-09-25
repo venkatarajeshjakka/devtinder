@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const { errorMiddleware } = require("./middlewares/error-middleware");
 const port = 3040;
 
 //middleware
@@ -28,12 +29,9 @@ app.get("/users", (req, res) => {
   res.send("This is the about page.");
 });
 
-app.use((err, req, res, next) => {
-  if (err) {
-    console.error(`Error in the stack:${err.stack}`);
-    res.status(500).send(`Something broke! you requested URL is ${req.url}`);
-  }
-});
+//Error Middleware
+app.use(errorMiddleware);
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
