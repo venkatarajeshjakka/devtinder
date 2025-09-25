@@ -28,6 +28,12 @@ app.get("/users", (req, res) => {
   res.send("This is the about page.");
 });
 
+app.use((err, req, res, next) => {
+  if (err) {
+    console.error(`Error in the stack:${err.stack}`);
+    res.status(500).send(`Something broke! you requested URL is ${req.url}`);
+  }
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
