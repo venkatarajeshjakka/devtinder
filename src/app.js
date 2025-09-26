@@ -29,7 +29,6 @@ app.post("/signup", async (req, res) => {
   const user = new User(body);
   await user.save(); // Save the user to the database
 
-  res.contentType("application/json");
   res.status(201).json({
     success: true,
     message: "User signed up successfully",
