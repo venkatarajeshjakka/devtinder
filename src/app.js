@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 const { loggingMiddleware, errorMiddleware } = require("./middlewares");
-
+const connectToDatabase = require("./config/database");
 const port = 3040;
 
 //middleware
@@ -20,7 +20,8 @@ app.get(
   }
 );
 
-app.get("/users", (req, res) => {
+app.get("/users", async (req, res) => {
+  await connectToDatabase();
   res.contentType("application/json");
   res.send("This is the about page.");
 });
