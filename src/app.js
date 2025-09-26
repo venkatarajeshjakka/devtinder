@@ -1,9 +1,12 @@
 const express = require("express");
 const app = express();
-
+const User = require("./models/user");
 const { loggingMiddleware, errorMiddleware } = require("./middlewares");
 const connectToDatabase = require("./config/database");
 const port = 3040;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 //middleware
 app.use(loggingMiddleware);
@@ -20,11 +23,19 @@ app.get(
   }
 );
 
-app.get("/users", async (req, res) => {
-  res.contentType("application/json");
-  res.send("This is the about page.");
-});
+app.post("/signup", async (req, res) => {
+  const body = req.body;
 
+  const user = new User(body);
+  await user.save(); // Save the user to the database
+
+  res.contentType("application/json");
+  res.status(201).json({
+    success: true,
+    message: "User signed up successfully",
+    user,
+  });
+});
 //Error Middleware
 app.use(errorMiddleware);
 
