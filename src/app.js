@@ -21,7 +21,6 @@ app.get(
 );
 
 app.get("/users", async (req, res) => {
-  await connectToDatabase();
   res.contentType("application/json");
   res.send("This is the about page.");
 });
@@ -29,6 +28,15 @@ app.get("/users", async (req, res) => {
 //Error Middleware
 app.use(errorMiddleware);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// Connect to the database and then start the server
+connectToDatabase()
+  .then(() => {
+    console.log("Database connection established, starting server...");
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to the database", error);
+    process.exit(1); // Exit the process with an error code
+  });
