@@ -35,6 +35,31 @@ app.post("/signup", async (req, res) => {
     user,
   });
 });
+
+//GET user by email
+app.get("/user", async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+  res.json({
+    success: true,
+    user,
+  });
+});
+
+app.get("/feed", (req, res) => {
+  res.json({
+    success: true,
+    message: "This is the feed endpoint",
+  });
+});
 //Error Middleware
 app.use(errorMiddleware);
 
