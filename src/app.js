@@ -80,6 +80,22 @@ app.delete("/user/:id", async (req, res) => {
   });
 });
 
+app.patch("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+  const user = await User.findByIdAndUpdate(id, body, { new: true });
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+  res.json({
+    success: true,
+    message: "User updated successfully",
+    user,
+  });
+});
 //Error Middleware
 app.use(errorMiddleware);
 
