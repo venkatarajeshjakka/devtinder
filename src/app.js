@@ -54,12 +54,32 @@ app.get("/user", async (req, res) => {
   });
 });
 
-app.get("/feed", (req, res) => {
+app.get("/feed", async (req, res) => {
+  const users = await User.find();
+
   res.json({
     success: true,
-    message: "This is the feed endpoint",
+    users,
   });
 });
+
+app.delete("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findByIdAndDelete(id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  res.json({
+    success: true,
+    message: "User deleted successfully",
+    user,
+  });
+});
+
 //Error Middleware
 app.use(errorMiddleware);
 
