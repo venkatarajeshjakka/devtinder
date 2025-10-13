@@ -18,9 +18,18 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    password: { type: String, required: true },
-    age: { type: Number, min: 18 },
-    gender: { type: String, enum: ["male", "female", "others"] },
+    password: {
+      type: String,
+      required: true,
+    },
+    age: {
+      type: Number,
+      min: 18,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "others"],
+    },
     photoUrl: { type: String },
     bio: { type: String },
     skills: { type: [String] },
