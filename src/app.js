@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
 const User = require("./models/user");
-const { loggingMiddleware, errorMiddleware } = require("./middlewares");
+const {
+  loggingMiddleware,
+  errorMiddleware,
+  userAuth,
+} = require("./middlewares");
 const connectToDatabase = require("./config/database");
 const { validateSignUpData } = require("./utils/validation");
 const bcrpt = require("bcrypt");
@@ -51,6 +55,7 @@ app.post("/login", async (req, res) => {
   const JWT_SECRET = process.env.JWT_SECRET;
   const token = jwt.sign({ _id: user._id, email: user.email }, JWT_SECRET, {
     expiresIn: "1h",
+    algorithm: "HS256",
   });
 
   res.cookie("token", token, { httpOnly: true, secure: true });
@@ -61,22 +66,9 @@ app.post("/login", async (req, res) => {
   });
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-
-    const { token } = cookies;
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "No token found",
-      });
-    }
-
-    const JWT_SECRET = process.env.JWT_SECRET;
-
-    const decodedToken = jwt.verify(token, JWT_SECRET);
+    const decodedToken = req.user;
 
     const { _id } = decodedToken;
 
