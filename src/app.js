@@ -3,6 +3,9 @@ const app = express();
 const User = require("./models/user");
 const { loggingMiddleware, errorMiddleware } = require("./middlewares");
 const connectToDatabase = require("./config/database");
+const { validateSignUpData } = require("./utils/validation");
+const bcrpt = require("bcrypt");
+
 const port = 3040;
 
 app.use(express.json());
@@ -23,10 +26,37 @@ app.get(
   }
 );
 
-app.post("/signup", async (req, res) => {
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  const isPasswordValid = await bcrpt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid password",
+    });
+  }
+  res.json({
+    success: true,
+    message: "User logged in successfully",
+  });
+});
+app.post("/signup", validateSignUpData, async (req, res) => {
   const body = req.body;
 
-  const user = new User(body);
+  const passwordHash = await bcrpt.hash(body.password, 10);
+
+  const updatedBody = { ...body, password: passwordHash };
+  const user = new User(updatedBody);
   await user.save(); // Save the user to the database
 
   res.status(201).json({

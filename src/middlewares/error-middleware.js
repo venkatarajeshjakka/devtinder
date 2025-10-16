@@ -1,6 +1,14 @@
 const errorMiddleware = (err, req, res, next) => {
   if (err) {
     switch (err.name) {
+      // Handle custom request validation errors
+      case "RequestValidationError":
+        return res.status(400).json({
+          success: false,
+          errorType: "RequestValidationError",
+          message: err.message,
+        });
+
       // Handle Mongoose validation errors
       case "ValidationError":
         return res.status(400).json({
