@@ -5,12 +5,14 @@ const { loggingMiddleware, errorMiddleware } = require("./middlewares");
 const connectToDatabase = require("./config/database");
 const { validateSignUpData } = require("./utils/validation");
 const bcrpt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const port = 3040;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 //middleware
 app.use(loggingMiddleware);
 
@@ -31,9 +33,9 @@ app.post("/login", async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({
+    return res.status(401).json({
       success: false,
-      message: "User not found",
+      message: "Invalid Credentials",
     });
   }
 
@@ -42,13 +44,61 @@ app.post("/login", async (req, res) => {
   if (!isPasswordValid) {
     return res.status(401).json({
       success: false,
-      message: "Invalid password",
+      message: "Invalid Credentials",
     });
   }
+
+  const JWT_SECRET = process.env.JWT_SECRET;
+  const token = jwt.sign({ _id: user._id, email: user.email }, JWT_SECRET, {
+    expiresIn: "1h",
+  });
+
+  res.cookie("token", token, { httpOnly: true, secure: true });
+
   res.json({
     success: true,
     message: "User logged in successfully",
   });
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+
+    const { token } = cookies;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token found",
+      });
+    }
+
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+
+    const { _id } = decodedToken;
+
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid Token",
+    });
+  }
 });
 app.post("/signup", validateSignUpData, async (req, res) => {
   const body = req.body;
@@ -78,6 +128,7 @@ app.get("/user", async (req, res) => {
       message: "User not found",
     });
   }
+
   res.json({
     success: true,
     user,
