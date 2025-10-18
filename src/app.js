@@ -5,6 +5,7 @@ const {
   loggingMiddleware,
   errorMiddleware,
   userAuth,
+  validUser,
 } = require("./middlewares");
 const connectToDatabase = require("./config/database");
 const { validateSignUpData } = require("./utils/validation");
@@ -20,17 +21,10 @@ app.use(cookieParser());
 //middleware
 app.use(loggingMiddleware);
 
-app.get(
-  "/",
-  (req, res, next) => {
-    console.log("first middleware");
-    next();
-  },
-  (req, res) => {
-    res.contentType("application/json");
-    res.send("Hello to my server!");
-  }
-);
+app.get("/", (req, res) => {
+  res.contentType("application/json");
+  res.send("Hello to my server!");
+});
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -66,20 +60,13 @@ app.post("/login", async (req, res) => {
   });
 });
 
-app.get("/profile", userAuth, async (req, res) => {
+app.get("/profile", userAuth, validUser, async (req, res) => {
   try {
     const decodedToken = req.user;
 
     const { _id } = decodedToken;
 
-    const user = await User.findById(_id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    const user = req.user;
 
     res.json({
       success: true,
