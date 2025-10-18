@@ -11,7 +11,6 @@ const connectToDatabase = require("./config/database");
 const { validateSignUpData } = require("./utils/validation");
 const bcrpt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 
 const port = 3040;
 
@@ -46,13 +45,13 @@ app.post("/login", async (req, res) => {
     });
   }
 
-  const JWT_SECRET = process.env.JWT_SECRET;
-  const token = jwt.sign({ _id: user._id, email: user.email }, JWT_SECRET, {
-    expiresIn: "1h",
-    algorithm: "HS256",
+  const token = user.getJWT();
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+    expires: new Date(Date.now() + 3600000), // 1 hour
   });
-
-  res.cookie("token", token, { httpOnly: true, secure: true });
 
   res.json({
     success: true,
