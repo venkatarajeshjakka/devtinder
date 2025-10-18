@@ -62,10 +62,6 @@ app.post("/login", async (req, res) => {
 
 app.get("/profile", userAuth, validUser, async (req, res) => {
   try {
-    const decodedToken = req.user;
-
-    const { _id } = decodedToken;
-
     const user = req.user;
 
     res.json({
@@ -73,9 +69,9 @@ app.get("/profile", userAuth, validUser, async (req, res) => {
       user,
     });
   } catch (error) {
-    return res.status(401).json({
+    return res.status(500).json({
       success: false,
-      message: "Invalid Token",
+      message: "Something went wrong",
     });
   }
 });
