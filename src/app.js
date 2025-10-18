@@ -36,7 +36,7 @@ app.post("/login", async (req, res) => {
     });
   }
 
-  const isPasswordValid = await bcrpt.compare(password, user.password);
+  const isPasswordValid = await user.validatePassword(password);
 
   if (!isPasswordValid) {
     return res.status(401).json({
