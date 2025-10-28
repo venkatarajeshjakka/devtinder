@@ -1,7 +1,7 @@
 const express = require("express");
 const { userAuth, validUser } = require("../middlewares");
 const router = express.Router();
-
+const User = require("../models/user");
 const ConnectionRequest = require("../models/connectionRequest");
 
 router.post(
@@ -10,20 +10,35 @@ router.post(
   validUser,
   async (req, res) => {
     try {
-      console.log(req.user);
       const fromUserId = req.user._id;
       const toUserId = req.params.toUserId;
       const status = req.params.status;
 
-      if (fromUserId.toString() === toUserId.toString()) {
+      const allowedStatus = ["ignored", "interested"];
+      const isAllowed = allowedStatus.includes(status);
+
+      if (!isAllowed) {
+        return res.status(400).json({
+          success: false,
+          message: `Status must be one of the following: ${allowedStatus.join(
+            ", "
+          )}`,
+        });
+      }
+
+      const toUser = await User.findById(toUserId);
+
+      if (!toUser) {
         return res
-          .status(400)
-          .json({ success: false, message: "Cannot send request to yourself" });
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       const existingRequest = await ConnectionRequest.findOne({
-        fromUserId,
-        toUserId,
+        $or: [
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
+        ],
       });
 
       if (existingRequest) {
