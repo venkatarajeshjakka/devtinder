@@ -43,4 +43,20 @@ const validateSignUpData = (req, res, next) => {
   next();
 };
 
-module.exports = { validateSignUpData };
+const validateProfileData = (req) => {
+  const allowedFields = [
+    "firstName",
+    "lastName",
+    "age",
+    "gender",
+    "photoUrl",
+    "bio",
+    "skills",
+  ];
+  const isAllowed = Object.keys(req.body).every((field) =>
+    allowedFields.includes(field)
+  );
+
+  return isAllowed;
+};
+module.exports = { validateSignUpData, validateProfileData };
